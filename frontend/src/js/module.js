@@ -47,12 +47,12 @@ const form = document.querySelector('.createTaskForm');
     }
  }
  const addTask = (task) => {
-     const tasksDom = document.querySelector('.tasks');
-     const taskDom = document.createElement('li');
+    const tasksDom = document.querySelector('.tasks');
+    const taskDom = document.createElement('li');
 
-     taskDom.innerHTML = getUpdatedTemplate(task);
-     tasksDom.prepend(taskDom);
-     addRemoveHandler(taskDom);
-     addCompleteHandler(taskDom);
-     addFavoriteHandler(tasksDom);
-     }
+    taskDom.innerHTML = getUpdatedTemplate(task);
+    tasksDom.prepend(taskDom);
+    addRemoveHandler(taskDom);
+    addCompleteHandler(taskDom);
+    addFavoriteHandler(tasksDom);
+}
