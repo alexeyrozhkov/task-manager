@@ -5,11 +5,16 @@
 </head>
 <body>
     <script>
-        fetch("/todos/1", {
-            method: "DELETE",
+        fetch("/todos", {
+            method: "POST",
             headers: {
                 'Content-Type': 'application/json'
-            }
+            },
+            body: JSON.stringify({
+                text: "text",
+                completed: false,
+                favorite: true
+            })
         })
     </script>
 </body>

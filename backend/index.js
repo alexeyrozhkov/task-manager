@@ -1,8 +1,18 @@
 const express = require('express');
 const path = require('path');
 const app = express();
+
+const allowCrossDomain = function(req, res, next) {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+
+    next();
+}
+
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
+app.use(allowCrossDomain);
 
 
 app.get("/test", (request, response) => {
@@ -44,6 +54,7 @@ app.get("/todos/:id", (request, response) => {
 });
 
 app.post("/todos", (request, response) => {
+    console.log("!!!!");
     response.set({
         'Access-Control-Allow-Origin': '*'
     })
