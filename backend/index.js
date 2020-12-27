@@ -24,10 +24,16 @@ const todos = [
 const isDefined = value => value !== undefined && value !== null;
 
 app.get("/todos", (request, response) => {
+    response.set({
+        'Access-Control-Allow-Origin': '*'
+    })
     response.json(todos);
 });
 
 app.get("/todos/:id", (request, response) => {
+    response.set({
+        'Access-Control-Allow-Origin': '*'
+    })
     const selectedItemId = request.params.id;
     const selectedItem = todos.find(item => item.id === +selectedItemId);
     if (!selectedItem) {
@@ -38,6 +44,9 @@ app.get("/todos/:id", (request, response) => {
 });
 
 app.post("/todos", (request, response) => {
+    response.set({
+        'Access-Control-Allow-Origin': '*'
+    })
     const id = todos[todos.length - 1].id + 1;
     if (!isDefined(request.body.text)) {
         response.status(400).send("Item must contain text field");
@@ -61,6 +70,9 @@ app.post("/todos", (request, response) => {
 });
 
 app.put("/todos/:id", (request, response) => {
+    response.set({
+        'Access-Control-Allow-Origin': '*'
+    })
     const selectedItemId = request.params.id;
     const selectedItem = todos.find(item => item.id === +selectedItemId);
     if (!selectedItem) {
@@ -81,6 +93,9 @@ app.put("/todos/:id", (request, response) => {
 });
 
 app.delete("/todos/:id", (request, response) => {
+    response.set({
+        'Access-Control-Allow-Origin': '*'
+    })
     const selectedItemId = request.params.id;
     const selectedItemIndex = todos.findIndex(item => item.id === +selectedItemId);
     if (selectedItemIndex === -1) {
