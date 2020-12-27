@@ -1,6 +1,6 @@
 
 const form = document.querySelector('.createTaskForm');
- form.onsubmit = function(event) {
+form.onsubmit = function(event) {
      event.preventDefault();
 
      const formData = new FormData(event.target);
@@ -40,13 +40,27 @@ const form = document.querySelector('.createTaskForm');
      }
 
  }
- const addFavoriteHandler = (taskDom) =>{
+const addFavoriteHandler = (taskDom) =>{
     const starDom = taskDom.querySelector('.star');
     starDom.onclick = () => {
         starDom.classList.toggle('selected');
     }
- }
- const addTask = (task) => {
+}
+
+const editTaskButton = (taskDom) => {
+    const editButton = taskDom.querySelector('.edit');
+    editButton.onclick = () => {
+        const inputText = taskDom.querySelector('.taskInput');
+        inputText.disabled = '';
+    }
+}
+const onblurInput = (taskDom) => {
+    const inputText = taskDom.querySelector('.taskInput');
+    inputText.onblur = () => {
+        inputText.disabled = true;
+    }
+}
+const addTask = (task) => {
     const tasksDom = document.querySelector('.tasks');
     const taskDom = document.createElement('li');
 
@@ -55,4 +69,6 @@ const form = document.querySelector('.createTaskForm');
     addRemoveHandler(taskDom);
     addCompleteHandler(taskDom);
     addFavoriteHandler(tasksDom);
+    editTaskButton(taskDom);
+    onblurInput(taskDom);
 }
