@@ -1,6 +1,9 @@
 
 const form = document.querySelector('.createTaskForm');
 const url = 'http://localhost:3030/todos';
+const buttonCheckAllTasks = document.querySelector('.selectAll');
+
+
 
 form.onsubmit = function(event) {
     event.preventDefault();
@@ -102,10 +105,25 @@ const editTaskButton = (taskDom) => {
 }
 const onblurInput = (taskDom) => {
     const inputText = taskDom.querySelector('.taskInput');
+    
     inputText.onblur = () => {
-        inputText.disabled = true;
+        const textValue = inputText.value;
+        const id = taskDom.dataset.id;
+        fetch(`${url}/${id}`,{
+            method:'PUT',
+            headers: {
+               'Content-Type': 'application/json'
+           },
+           body: JSON.stringify({
+               text: textValue
+           }) 
+        }).then(() => {
+            inputText.disabled = true;
+        })
+        
     }
 }
+
 const addTask = (task,completed,favorite, id) => {
     
     const tasksDom = document.querySelector('.tasks');
@@ -130,7 +148,55 @@ const addTask = (task,completed,favorite, id) => {
     onblurInput(taskDom);
 }
 
+buttonCheckAllTasks.onclick = () => {
+    const tasksDom = document.querySelector('.tasks');
+    const LisTask = tasksDom.querySelectorAll('li');
+    const isCompletedTask = true;
+    let ArrayIndexId = [];
+    console.log(ArrayIndexId);
+    for(let i=0; i < LisTask.length; i++) {
+        let IndexId = LisTask[i].dataset.id;
+        ArrayIndexId.push(IndexId);
+    }
+    Promise.all([
+        fetch(`${url}/${ArrayIndexId[0]}`,{
+            method:'PUT',
+        headers: {
+           'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            completed: isCompletedTask
+        })
+        }),
+        fetch(`${url}/${ArrayIndexId[1]}`,{
+            method:'PUT',
+        headers: {
+           'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            completed: isCompletedTask
+        })
+        }),
+        fetch(`${url}/${ArrayIndexId[2]}`,{
+            method:'PUT',
+        headers: {
+           'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            completed: isCompletedTask
+        })
+        })
+    ]).then(() => {
+        buttonCheckAllTasks.classList.add('selected');
+        for (let i = 0; i < LisTask.length; i++) {
+            LisTask[i].classList.add('completed');
+            const checkbox = LisTask[i].querySelector(".checkbox");
+            checkbox.classList.add("selected");
 
+        }
+    })
+
+}
 
 fetch(url)
 .then(data => data.json())
