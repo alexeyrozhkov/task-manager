@@ -151,9 +151,8 @@ const addTask = (task,completed,favorite, id) => {
 buttonCheckAllTasks.onclick = () => {
     const tasksDom = document.querySelector('.tasks');
     const LisTask = tasksDom.querySelectorAll('li');
-    const isCompletedTask = true;
+    const isCompletedTask = !buttonCheckAllTasks.classList.contains("selected");
     let ArrayIndexId = [];
-    console.log(ArrayIndexId);
     for(let i=0; i < LisTask.length; i++) {
         let IndexId = LisTask[i].dataset.id;
         ArrayIndexId.push(IndexId);
@@ -187,11 +186,11 @@ buttonCheckAllTasks.onclick = () => {
         })
         })
     ]).then(() => {
-        buttonCheckAllTasks.classList.add('selected');
+        buttonCheckAllTasks.classList.toggle('selected');
         for (let i = 0; i < LisTask.length; i++) {
-            LisTask[i].classList.add('completed');
+            LisTask[i].classList.toggle('completed');
             const checkbox = LisTask[i].querySelector(".checkbox");
-            checkbox.classList.add("selected");
+            checkbox.classList.toggle("selected");
 
         }
     })
