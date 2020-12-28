@@ -3,7 +3,83 @@ const form = document.querySelector('.createTaskForm');
 const url = 'http://localhost:3030/todos';
 const buttonCheckAllTasks = document.querySelector('.selectAll');
 
+const todos = [];
 
+/**
+ * 
+ * @param {string} method 
+ * @param {Object} body
+ * @param {string=} path 
+ */
+function sendRequest(method, body, path) {
+    const requestUrl = path ? `${url}/${path}` : url;
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+    const options = {
+        method: method,
+        body: JSON.stringify(body)
+    }
+    if (method === 'POST' || method === 'PUT') {
+        options.headers = headers;
+    }
+    return fetch(requestUrl, options);
+}
+
+/**
+ * 
+ * @param {{id: number; text: string; favorite: boolean; completed: boolean;}} todo 
+ */
+function getTodoTemplate(todo) {
+    return `
+        <div class="content ${todo.completed ? "completed" : ""}">
+            <button class="checkbox ${todo.completed ? "selected" : ""}"></button>
+            <input type="text" disabled value="${todo.text}" class="taskInput"/>
+        </div>
+        <div class="actions">
+            <button class="star ${todo.favorite ? "selected" : ""}"></button>
+            <button class="edit"></button>
+            <button class="remove"></button>
+        </div>
+     `
+}
+
+/**
+ * 
+ * @param {{id: number; text: string; favorite: boolean; completed: boolean;}} todo 
+ */
+function renderTodo(todo) {
+    const tasksDom = document.querySelector('.tasks');
+    const taskDom = document.createElement('li');
+    taskDom.dataset.id = todo.id;
+
+    taskDom.innerHTML = getTodoTemplate(todo);
+    tasksDom.append(taskDom);
+    addRemoveHandler(taskDom);
+    addCompleteHandler(taskDom);
+    addFavoriteHandler(taskDom);
+    editTaskButton(taskDom);
+    onblurInput(taskDom);
+}
+
+/**
+ * @param {string} text 
+ */
+function addTodo(text) {
+    const newTodo = {
+        text: text,
+        completed: false,
+        favorite: false
+    }
+    sendRequest('POST', newTodo)
+    .then(data => data.json())
+    .then((data) => {
+        newTodo.id = data.id;
+        todos.push(newTodo);
+        renderTodo(newTodo)
+        form.reset();
+    })
+}
 
 form.onsubmit = function(event) {
     event.preventDefault();
@@ -12,24 +88,11 @@ form.onsubmit = function(event) {
     const task = formData.get('task');
      
     if (task.trim()) {
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                text : task,
-                completed : false,
-                favorite: false
-            })
-        })
-        .then(data => data.json())
-        .then((data) => {
-            addTask(task, false, false, data.id);
-            form.reset();
-        })
+        addTodo(task)
      } 
  }
+
+
 
  const getUpdatedTemplate = (task) => {
      return `
@@ -201,7 +264,8 @@ fetch(url)
 .then(data => data.json())
 .then(data => {
     for(let i=0; i<data.length; i++) {
-        addTask(data[i].text, data[i].completed, data[i].favorite, data[i].id);
+        renderTodo(data[i]);
+        // addTask(data[i].text, data[i].completed, data[i].favorite, data[i].id);
     }
 } );
 
