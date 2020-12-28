@@ -7,11 +7,9 @@ const todos = [];
 
 /**
  * 
- * @param {string} method 
- * @param {Object} body
- * @param {string=} path 
+ * @param {method: string; body?:Object; path?:string}  
  */
-function sendRequest(method, body, path) {
+function sendRequest({method, body, path}) {
     const requestUrl = path ? `${url}/${path}` : url;
     const headers = {
         'Content-Type': 'application/json'
@@ -71,13 +69,35 @@ function addTodo(text) {
         completed: false,
         favorite: false
     }
-    sendRequest('POST', newTodo)
+    sendRequest({
+        method: 'POST',
+        body: newTodo
+    })
     .then(data => data.json())
     .then((data) => {
         newTodo.id = data.id;
         todos.push(newTodo);
         renderTodo(newTodo)
         form.reset();
+    })
+}
+
+/**
+ * 
+ * @param {number} id 
+ */
+function deleteTodo(id) {
+    return sendRequest({
+        method: "DELETE",
+        path: id
+    })
+    .then(() => {
+        const deletedTodoIndex = todos.findIndex(item => item.id === id);
+        if (deletedTodoIndex === -1) {
+            console.error("Удаляемого элемента нет в массиве :( ");
+            return;
+        };
+        todos.splice(deletedTodoIndex, 1);
     })
 }
 
@@ -89,7 +109,7 @@ form.onsubmit = function(event) {
      
     if (task.trim()) {
         addTodo(task)
-     } 
+    } 
  }
 
 
@@ -108,15 +128,14 @@ form.onsubmit = function(event) {
      `
  }
  const addRemoveHandler = (taskDom) => {
-     const removeDom = taskDom.querySelector('.remove');
-     removeDom.onclick = () => {
-        const id = taskDom.dataset.id;
-         fetch(`${url}/${id}`, {
-             method: 'DELETE'
-         }).then(() => {
+    const removeDom = taskDom.querySelector('.remove');
+    removeDom.onclick = () => {
+        const id = +taskDom.dataset.id;
+        deleteTodo(id)
+        .then(() => {
             taskDom.remove();
-         })
-     }
+        })
+    }
  }
 
  const addCompleteHandler = (taskDom) => {
