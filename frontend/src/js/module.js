@@ -10,7 +10,7 @@ const todos = [];
  * @param {method: string; body?:Object; path?:string}  
  */
 function sendRequest({method, body, path}) {
-    const requestUrl = path ? `${url}/${path}` : url;
+    const requestUrl = path || path === 0 ? `${url}/${path}` : url;
     const headers = {
         'Content-Type': 'application/json'
     };
@@ -338,6 +338,7 @@ fetch(url)
 .then(data => data.json())
 .then(data => {
     for(let i=0; i<data.length; i++) {
+        todos.push(data[i]);
         renderTodo(data[i]);
     }
 } );
