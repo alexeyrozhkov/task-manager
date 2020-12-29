@@ -54,7 +54,6 @@ app.get("/todos/:id", (request, response) => {
 });
 
 app.post("/todos", (request, response) => {
-    console.log("!!!!");
     response.set({
         'Access-Control-Allow-Origin': '*'
     })

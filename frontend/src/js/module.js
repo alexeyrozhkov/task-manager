@@ -101,6 +101,45 @@ function deleteTodo(id) {
     })
 }
 
+/**
+ * 
+ * @param {number} id 
+ * @param {value} value
+ */
+function setComplete(id, value) {
+    return sendRequest({
+        method: "PUT",
+        path: id,
+        body: {
+            completed: value
+        }
+    }).then(() => {
+        const todo = todos.find(item => item.id === id);
+        if (todo) {
+            todo.completed = value;
+        } else {
+            console.error("Редактируемого элемента нет в массиве :( ");
+        }
+    })
+}
+
+function setFavorite(id, value) {
+    return sendRequest({
+        method: "PUT",
+        path: id,
+        body: {
+            favorite: value
+        }
+    }).then(() => {
+        const todo = todos.find(item => item.id === id);
+        if (todo) {
+            todo.favorite = value;
+        } else {
+            console.error("Редактируемого элемента нет в массиве :( ");
+        }
+    })
+}
+
 form.onsubmit = function(event) {
     event.preventDefault();
 
@@ -111,8 +150,6 @@ form.onsubmit = function(event) {
         addTodo(task)
     } 
  }
-
-
 
  const getUpdatedTemplate = (task) => {
      return `
@@ -142,16 +179,9 @@ form.onsubmit = function(event) {
     const checkboxDom = taskDom.querySelector('.checkbox');
     checkboxDom.onclick = () => {
         const isCompleted = checkboxDom.classList.contains('selected');
-        const id = taskDom.dataset.id;
-        fetch(`${url}/${id}`, {
-            method:'PUT',
-            headers: {
-               'Content-Type': 'application/json'
-           },
-           body: JSON.stringify({
-               completed: !isCompleted
-           })
-        }).then(() => {
+        const id = +taskDom.dataset.id;
+        setComplete(id, !isCompleted)
+        .then(() => {
             checkboxDom.classList.toggle('selected');
             taskDom.classList.toggle('completed');
         })
@@ -162,16 +192,9 @@ const addFavoriteHandler = (taskDom) =>{
     const starDom = taskDom.querySelector('.star');
     starDom.onclick = () => {
         const isFavorite = starDom.classList.contains('selected');
-        const id = taskDom.dataset.id;
-        fetch(`${url}/${id}`, {
-            method:'PUT',
-            headers: {
-               'Content-Type': 'application/json'
-           },
-           body: JSON.stringify({
-                favorite: !isFavorite
-           })
-        }).then(() => {
+        const id = +taskDom.dataset.id;
+        setFavorite(id, !isFavorite)
+        .then(() => {
             starDom.classList.toggle('selected');
         })
     
@@ -284,7 +307,6 @@ fetch(url)
 .then(data => {
     for(let i=0; i<data.length; i++) {
         renderTodo(data[i]);
-        // addTask(data[i].text, data[i].completed, data[i].favorite, data[i].id);
     }
 } );
 
