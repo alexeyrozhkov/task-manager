@@ -21,7 +21,13 @@ function sendRequest({method, body, path}) {
     if (method === 'POST' || method === 'PUT') {
         options.headers = headers;
     }
-    return fetch(requestUrl, options);
+    return fetch(requestUrl, options)
+        .then(data => {
+            if (data.status === 200) {
+                return data;
+            }
+            throw new Error(data.status);
+        })
 }
 
 /**
@@ -123,6 +129,11 @@ function setComplete(id, value) {
     })
 }
 
+/**
+ * 
+ * @param {number} id 
+ * @param {value} value
+ */
 function setFavorite(id, value) {
     return sendRequest({
         method: "PUT",
@@ -140,6 +151,29 @@ function setFavorite(id, value) {
     })
 }
 
+/**
+ * 
+ * @param {number} id 
+ * @param {string} text
+ */
+function editTodo(id, text) {
+    return sendRequest({
+        method: "PUT",
+        path: id,
+        body: {
+            text: text
+        }
+    })
+    .then(() => {
+        const todo = todos.find(item => item.id === id);
+        if (todo) {
+            todo.text = text;
+        } else {
+            console.error("Редактируемого элемента нет в массиве :( ");
+        }
+    })
+}
+
 form.onsubmit = function(event) {
     event.preventDefault();
 
@@ -149,9 +183,9 @@ form.onsubmit = function(event) {
     if (task.trim()) {
         addTodo(task)
     } 
- }
+}
 
- const getUpdatedTemplate = (task) => {
+const getUpdatedTemplate = (task) => {
      return `
         <div class="content">
             <button class="checkbox"></button>
@@ -163,8 +197,8 @@ form.onsubmit = function(event) {
             <button class="remove"></button>
         </div>
      `
- }
- const addRemoveHandler = (taskDom) => {
+}
+const addRemoveHandler = (taskDom) => {
     const removeDom = taskDom.querySelector('.remove');
     removeDom.onclick = () => {
         const id = +taskDom.dataset.id;
@@ -173,9 +207,9 @@ form.onsubmit = function(event) {
             taskDom.remove();
         })
     }
- }
+}
 
- const addCompleteHandler = (taskDom) => {
+const addCompleteHandler = (taskDom) => {
     const checkboxDom = taskDom.querySelector('.checkbox');
     checkboxDom.onclick = () => {
         const isCompleted = checkboxDom.classList.contains('selected');
@@ -187,7 +221,7 @@ form.onsubmit = function(event) {
         })
     }
 
- }
+}
 const addFavoriteHandler = (taskDom) =>{
     const starDom = taskDom.querySelector('.star');
     starDom.onclick = () => {
@@ -213,16 +247,14 @@ const onblurInput = (taskDom) => {
     
     inputText.onblur = () => {
         const textValue = inputText.value;
-        const id = taskDom.dataset.id;
-        fetch(`${url}/${id}`,{
-            method:'PUT',
-            headers: {
-               'Content-Type': 'application/json'
-           },
-           body: JSON.stringify({
-               text: textValue
-           }) 
-        }).then(() => {
+        const id = +taskDom.dataset.id;
+        editTodo(id, textValue)
+        .then(() => {
+            inputText.disabled = true;
+        })
+        .catch(() => {
+            const todo = todos.find(item => item.id === id);
+            inputText.value = todo.text;
             inputText.disabled = true;
         })
         
