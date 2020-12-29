@@ -174,30 +174,33 @@ function editTodo(id, text) {
     })
 }
 
-form.onsubmit = function(event) {
-    event.preventDefault();
-
-    const formData = new FormData(event.target);
-    const task = formData.get('task');
-     
-    if (task.trim()) {
-        addTodo(task)
-    } 
+/**
+ * 
+ * @param {number[]} ids
+ * @param {boolean} value
+ */
+function getCheckAllRequest(ids, value) {
+    const requests = [];
+    for (let i = 0; i < ids.length; i++) {
+        requests.push(
+            fetch(`${url}/${ids[i]}`,{
+                method:'PUT',
+                headers: {
+                'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    completed: value
+                })
+            })
+        )
+    }
+    return requests;
 }
 
-const getUpdatedTemplate = (task) => {
-     return `
-        <div class="content">
-            <button class="checkbox"></button>
-            <input type="text" disabled value="${task}" class="taskInput"/>
-        </div>
-        <div class="actions">
-            <button class="star"></button>
-            <button class="edit"></button>
-            <button class="remove"></button>
-        </div>
-     `
-}
+/**
+ * 
+ * @param {Node} taskDom 
+ */
 const addRemoveHandler = (taskDom) => {
     const removeDom = taskDom.querySelector('.remove');
     removeDom.onclick = () => {
@@ -209,6 +212,10 @@ const addRemoveHandler = (taskDom) => {
     }
 }
 
+/**
+ * 
+ * @param {Node} taskDom 
+ */
 const addCompleteHandler = (taskDom) => {
     const checkboxDom = taskDom.querySelector('.checkbox');
     checkboxDom.onclick = () => {
@@ -222,6 +229,11 @@ const addCompleteHandler = (taskDom) => {
     }
 
 }
+
+/**
+ * 
+ * @param {Node} taskDom 
+ */
 const addFavoriteHandler = (taskDom) =>{
     const starDom = taskDom.querySelector('.star');
     starDom.onclick = () => {
@@ -235,6 +247,10 @@ const addFavoriteHandler = (taskDom) =>{
     }
 }
 
+/**
+ * 
+ * @param {Node} taskDom 
+ */
 const editTaskButton = (taskDom) => {
     const editButton = taskDom.querySelector('.edit');
     editButton.onclick = () => {
@@ -242,6 +258,11 @@ const editTaskButton = (taskDom) => {
         inputText.disabled = '';
     }
 }
+
+/**
+ * 
+ * @param {Node} taskDom 
+ */
 const onblurInput = (taskDom) => {
     const inputText = taskDom.querySelector('.taskInput');
     
@@ -261,28 +282,19 @@ const onblurInput = (taskDom) => {
     }
 }
 
-const addTask = (task,completed,favorite, id) => {
-    
-    const tasksDom = document.querySelector('.tasks');
-    const taskDom = document.createElement('li');
+/**
+ * 
+ * @param {event} event 
+ */
+form.onsubmit = function(event) {
+    event.preventDefault();
 
-    taskDom.innerHTML = getUpdatedTemplate(task);
-    if(completed) {
-        const checkbox = taskDom.querySelector('.checkbox');
-        checkbox.classList.add('selected');
-        taskDom.classList.add('completed');
-    }
-    if(favorite) {
-        const star = taskDom.querySelector('.star');
-        star.classList.add('selected'); 
-    }
-    taskDom.dataset.id = id;
-    tasksDom.append(taskDom);
-    addRemoveHandler(taskDom);
-    addCompleteHandler(taskDom);
-    addFavoriteHandler(taskDom);
-    editTaskButton(taskDom);
-    onblurInput(taskDom);
+    const formData = new FormData(event.target);
+    const task = formData.get('task');
+     
+    if (task.trim()) {
+        addTodo(task)
+    } 
 }
 
 buttonCheckAllTasks.onclick = () => {
@@ -294,52 +306,39 @@ buttonCheckAllTasks.onclick = () => {
         let IndexId = LisTask[i].dataset.id;
         ArrayIndexId.push(IndexId);
     }
-    Promise.all([
-        fetch(`${url}/${ArrayIndexId[0]}`,{
-            method:'PUT',
-        headers: {
-           'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            completed: isCompletedTask
-        })
-        }),
-        fetch(`${url}/${ArrayIndexId[1]}`,{
-            method:'PUT',
-        headers: {
-           'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            completed: isCompletedTask
-        })
-        }),
-        fetch(`${url}/${ArrayIndexId[2]}`,{
-            method:'PUT',
-        headers: {
-           'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            completed: isCompletedTask
-        })
-        })
-    ]).then(() => {
+    const requests = getCheckAllRequest(ArrayIndexId, isCompletedTask)
+    Promise.all(requests).then(() => {
         buttonCheckAllTasks.classList.toggle('selected');
         for (let i = 0; i < LisTask.length; i++) {
-            LisTask[i].classList.toggle('completed');
-            const checkbox = LisTask[i].querySelector(".checkbox");
-            checkbox.classList.toggle("selected");
-
+            if (isCompletedTask) {
+                LisTask[i].classList.add('completed');
+                const checkbox = LisTask[i].querySelector(".checkbox");
+                checkbox.classList.add("selected");
+            } else {
+                LisTask[i].classList.remove('completed');
+                const checkbox = LisTask[i].querySelector(".checkbox");
+                checkbox.classList.remove("selected");
+            }
         }
     })
-
 }
+
+
+// INIT
 
 fetch(url)
 .then(data => data.json())
 .then(data => {
+    let allCompleted = true;
     for(let i=0; i<data.length; i++) {
         todos.push(data[i]);
         renderTodo(data[i]);
+        if (allCompleted && !data[i].completed) {
+            allCompleted = false;
+        } 
     }
-} );
+    if (allCompleted) {
+        buttonCheckAllTasks.classList.add("selected");
+    }
+});
 
